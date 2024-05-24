@@ -1146,7 +1146,11 @@ void createTable(rc_insert *t) {
   		}
   	}
   	printf("CREATE TABLE\n");
-  } else { //Tabela já existe, então não é preciso criar o índice b+.
+  } 
+  else if (finalizaTabela(tab) == ERRO_TAMANHO_VARCHAR) {
+    printf("ERROR: varchar(0) is not allowed\n");
+  }
+  else { //Tabela já existe, então não é preciso criar o índice b+.
 	  printf("ERROR: table already exist\n");
   }
 
