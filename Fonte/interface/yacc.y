@@ -25,6 +25,8 @@
    #include "parser.h"
 #endif
 
+
+
 extern char* yytext[];
 extern FILE * yyin;
 extern FILE* outFile_p;
@@ -49,9 +51,10 @@ int yywrap() {
         LIST_TABLES LIST_TABLE  CONNECT     HELP        LIST_DBASES
         CLEAR       CONTR       WHERE       OPERADOR    RELACIONAL
         LOGICO      ASTERISCO   SINAL       FECHA_P     ABRE_P
+        BEGIN       END         COMMIT      ROLLBACK
         STRING      INDEX       ON;
 %%
-start: insert | select | create_table | create_database | drop_table | drop_database
+start: insert | select | create_table | create_database | begin_transaction | end_transaction | commit_transaction | rollback_transaction | drop_table | drop_database
      | table_attr | list_tables | connection | exit_program | semicolon {GLOBAL_PARSER.consoleFlag = 1; return 0;}
      | help_pls | list_databases | clear | contributors | create_index
      | qualquer_coisa | /*epsilon*/;
@@ -59,6 +62,11 @@ start: insert | select | create_table | create_database | drop_table | drop_data
 /*--------------------------------------------------*/
 /**************** GENERAL FUNCTIONS *****************/
 /*--------------------------------------------------*/
+
+begin_transaction: BEGIN {setMode(OP_BEGIN); return 0;};
+end_transaction: END {setMode(OP_END); return 0;};
+commit_transaction: COMMIT {setMode(OP_COMMIT); return 0;};
+rollback_transaction: ROLLBACK {setMode(OP_ROLLBACK); return 0;};
 
 /* CONNECTION */
 connection: CONNECT OBJECT {connect(*yytext); GLOBAL_PARSER.consoleFlag = 1; return 0;};

@@ -12,7 +12,10 @@
 #define OP_DROP_DATABASE 	5
 #define OP_SELECT 		6
 #define OP_CREATE_INDEX 7
-
+#define OP_BEGIN 10
+#define OP_END 11
+#define OP_COMMIT 12
+#define OP_ROLLBACK 13
 /* Estrutura global que guarda as informações obtidas pelo yacc
  * na identificação dos tokens
  */
