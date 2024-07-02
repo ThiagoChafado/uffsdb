@@ -1220,7 +1220,7 @@ void createIndex(rc_insert *t) {
 
 void beginTransaction() { 
     printf("Transaction started.\n");
-    logStart();
+    //logStart();
     readLog();
     
     

@@ -337,25 +337,38 @@ void readLog()
         }
     }
         printf("\n LAST INDEX:%c", buffer[lastIndex+1]);
-    if(buffer[lastIndex+2] == 'I'){
-        //NOME DA TABELA
-        //LISTA CAMPOS
-        //LISTA COM VALORES
-        //DELTE FROM {nome da tabela} ...
-        //DELETE
-    }
+    
+     // Process the buffer from last '|' to the end
+    for (int i = lastIndex + 1; i < fileSize;)
+    {
+        if (buffer[i] == '$')
+        {
+            i++; // Skip the '$' character
 
-    if(buffer[lastIndex+2] == 'U'){
-        //NOME DA TABELA
-        //LISTA CAMPOS
-        //VALORES ANTIGOS
-        //UPDATE FROM ...
-    }
-    if(buffer[lastIndex+2] == 'D'){
-        //NOME DA TABELA
-        //LISTA CAMPOS
-        //VALORES
-        //INSERT
+            // Process the tokens separated by commas
+            while (i < fileSize && buffer[i] != '$')
+            {
+                char token[256]; // Assumes tokens are smaller than 256 characters
+                int tokenIndex = 0;
+
+                while (i < fileSize && buffer[i] != ',' && buffer[i] != '$')
+                {
+                    token[tokenIndex++] = buffer[i++];
+                }
+                token[tokenIndex] = '\0'; // Null-terminate the token
+
+                printf("Token: %s\n", token);
+
+                if (buffer[i] == ',')
+                {
+                    i++; // Skip the comma
+                }
+            }
+        }
+        else
+        {
+            i++; // Move to the next character
+        }
     }
     fclose(f);
 
