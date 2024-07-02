@@ -1,4 +1,5 @@
 #define FMISC 1
+
 //
 #ifndef FTYPES // garante que types.h não seja reincluída
   #include "types.h"
@@ -31,3 +32,13 @@ double get_inteiro(char []);
 double convertD(char c[]);
 
 void clear();
+
+
+// Funçoes para log
+void logFile();
+
+int logStart();
+
+int logWrite(char *op, table *tab, char *nomeCampo, char *valorCampo);
+
+void readLog();

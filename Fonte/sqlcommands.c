@@ -29,6 +29,11 @@
 #ifndef FEXPRESSAO
   #include "Expressao.h"
 #endif
+
+
+// Transação
+int transaction = 0;
+
 /* ----------------------------------------------------------------------------------------------
     Objetivo:   Recebe o nome de uma tabela e engloba as funções leObjeto() e leSchema().
     Parametros: Nome da Tabela, Objeto da Tabela e tabela.
@@ -1215,10 +1220,15 @@ void createIndex(rc_insert *t) {
 
 void beginTransaction() { 
     printf("Transaction started.\n");
+    logStart();
+    readLog();
+    
+    
 }
 
 void endTransaction() {
     printf("Transaction ended.\n");
+    
 }
 
 void commitTransaction() {

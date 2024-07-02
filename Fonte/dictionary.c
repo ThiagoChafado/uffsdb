@@ -663,6 +663,11 @@ int finalizaTabela(table *t)
 // INSERE NA TABELA
 column *insereValor(table *tab, column *c, char *nomeCampo, char *valorCampo)
 {
+    if (1)
+    {
+        printf("\n valores = %s, %s, %s", tab->nome, nomeCampo, valorCampo);
+        logWrite("I", tab, nomeCampo, valorCampo);
+    }
     int i;
     column *aux;
     column *e = NULL;
@@ -710,6 +715,7 @@ column *insereValor(table *tab, column *c, char *nomeCampo, char *valorCampo)
         // strncpy(e->valorCampo, valorCampo,n);
         e->next = NULL;
         c = e;
+
         return c;
     }
     else
@@ -777,6 +783,7 @@ column *insereValor(table *tab, column *c, char *nomeCampo, char *valorCampo)
 
                 // strncpy(e->valorCampo, valorCampo,n);
                 aux->next = e;
+    
                 return c;
             }
         }
