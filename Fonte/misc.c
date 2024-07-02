@@ -286,6 +286,7 @@ int logWrite(char *op, table *tab, char *nomeCampo, char *valorCampo)
     fputc(init, f);
     if (op = 'I')
     {
+        fputc('I',f);
         fwrite(tab->nome, 1, strlen(tab->nome), f);
         fputc(mid, f);
         fwrite(nomeCampo, 1, strlen(nomeCampo), f);
@@ -335,15 +336,27 @@ void readLog()
             lastIndex = z;
         }
     }
-        printf("%d", lastIndex);
-    if(buffer[lastIndex+1] == 'I'){
+        printf("\n LAST INDEX:%c", buffer[lastIndex+1]);
+    if(buffer[lastIndex+2] == 'I'){
         //NOME DA TABELA
         //LISTA CAMPOS
         //LISTA COM VALORES
         //DELTE FROM {nome da tabela} ...
         //DELETE
     }
-    if(buffer)
+
+    if(buffer[lastIndex+2] == 'U'){
+        //NOME DA TABELA
+        //LISTA CAMPOS
+        //VALORES ANTIGOS
+        //UPDATE FROM ...
+    }
+    if(buffer[lastIndex+2] == 'D'){
+        //NOME DA TABELA
+        //LISTA CAMPOS
+        //VALORES
+        //INSERT
+    }
     fclose(f);
 
 }
