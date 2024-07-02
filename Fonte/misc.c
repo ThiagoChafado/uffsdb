@@ -287,6 +287,7 @@ int logWrite(char *op, table *tab, char *nomeCampo, char *valorCampo)
     if (op = 'I')
     {
         fputc('I',f);
+        fputc(mid,f);
         fwrite(tab->nome, 1, strlen(tab->nome), f);
         fputc(mid, f);
         fwrite(nomeCampo, 1, strlen(nomeCampo), f);
@@ -336,7 +337,7 @@ void readLog()
             lastIndex = z;
         }
     }
-        printf("\n LAST INDEX:%c", buffer[lastIndex+1]);
+        //printf("\n LAST INDEX:%c", buffer[lastIndex+1]);
     
      // Process the buffer from last '|' to the end
     for (int i = lastIndex + 1; i < fileSize;)
