@@ -271,7 +271,7 @@ int logStart()
 
     fputc(start, f);
     fclose(f);
-    
+
     return 0;
 }
 
@@ -286,8 +286,8 @@ int logWrite(char *op, table *tab, char *nomeCampo, char *valorCampo)
     fputc(init, f);
     if (op = 'I')
     {
-        fputc('I',f);
-        fputc(mid,f);
+        fputc('I', f);
+        fputc(mid, f);
         fwrite(tab->nome, 1, strlen(tab->nome), f);
         fputc(mid, f);
         fwrite(nomeCampo, 1, strlen(nomeCampo), f);
@@ -329,7 +329,7 @@ void readLog()
         buffer[i] = c;
     }
 
-    for (z = 0; z <= fileSize ; z++)
+    for (z = 0; z <= fileSize; z++)
     {
         printf("%c", buffer[z]);
         if (buffer[z] == '|')
@@ -337,32 +337,75 @@ void readLog()
             lastIndex = z;
         }
     }
-        //printf("\n LAST INDEX:%c", buffer[lastIndex+1]);
-    
-     // Process the buffer from last '|' to the end
+    // printf("\n LAST INDEX:%c", buffer[lastIndex+1]);
+
+    // Process the buffer from last '|' to the end
     for (int i = lastIndex + 1; i < fileSize;)
     {
         if (buffer[i] == '$')
         {
             i++; // Skip the '$' character
+            char operation = buffer[i++];
 
             // Process the tokens separated by commas
             while (i < fileSize && buffer[i] != '$')
             {
-                char token[256]; // Assumes tokens are smaller than 256 characters
-                int tokenIndex = 0;
-
-                while (i < fileSize && buffer[i] != ',' && buffer[i] != '$')
+                if (operation == 'I')
                 {
-                    token[tokenIndex++] = buffer[i++];
+                    //DELETAR A PARTIR DOS TOKENS
+                    char token[256]; // Assumes tokens are smaller than 256 characters
+                    int tokenIndex = 0;
+                    //NESSE WHILE PROVAVELMENTE TENQ FAZER CONTADOR PARA MANTER ORDEM
+                    while (i < fileSize && buffer[i] != ',' && buffer[i] != '$')
+                    {
+                        token[tokenIndex++] = buffer[i++];
+                    }
+                    token[tokenIndex] = '\0'; // Null-terminate the token
+
+                    printf("Token: %s\n", token);
+
+                    if (buffer[i] == ',')
+                    {
+                        i++; // Skip the comma
+                    }
                 }
-                token[tokenIndex] = '\0'; // Null-terminate the token
-
-                printf("Token: %s\n", token);
-
-                if (buffer[i] == ',')
+                if (operation == 'U')
                 {
-                    i++; // Skip the comma
+                    //FAZER OPERACOES DE REVERTER UPDATE A PARTIR DESTES TOKENS
+                    char token[256]; // Assumes tokens are smaller than 256 characters
+                    int tokenIndex = 0;
+
+                    while (i < fileSize && buffer[i] != ',' && buffer[i] != '$')
+                    {
+                        token[tokenIndex++] = buffer[i++];
+                    }
+                    token[tokenIndex] = '\0'; // Null-terminate the token
+
+                    printf("Token: %s\n", token);
+
+                    if (buffer[i] == ',')
+                    {
+                        i++; // Skip the comma
+                    }
+                }
+                if (operation == 'D')
+                {
+                    //INSERIR A PARTIR DOS TOKENS
+                    char token[256]; // Assumes tokens are smaller than 256 characters
+                    int tokenIndex = 0;
+
+                    while (i < fileSize && buffer[i] != ',' && buffer[i] != '$')
+                    {
+                        token[tokenIndex++] = buffer[i++];
+                    }
+                    token[tokenIndex] = '\0'; // Null-terminate the token
+
+                    printf("Token: %s\n", token);
+
+                    if (buffer[i] == ',')
+                    {
+                        i++; // Skip the comma
+                    }
                 }
             }
         }
@@ -372,5 +415,4 @@ void readLog()
         }
     }
     fclose(f);
-
 }
