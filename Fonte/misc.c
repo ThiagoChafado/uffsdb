@@ -352,6 +352,7 @@ void readLog()
             {
                 if (operation == 'I')
                 {
+                    //NAO TEM FUNCAO DE DELETAR NESTE BANCO,TENQ FAZER NA MAO
                     //DELETAR A PARTIR DOS TOKENS
                     char token[256]; // Assumes tokens are smaller than 256 characters
                     int tokenIndex = 0;
@@ -369,44 +370,48 @@ void readLog()
                         i++; // Skip the comma
                     }
                 }
-                if (operation == 'U')
-                {
-                    //FAZER OPERACOES DE REVERTER UPDATE A PARTIR DESTES TOKENS
-                    char token[256]; // Assumes tokens are smaller than 256 characters
-                    int tokenIndex = 0;
 
-                    while (i < fileSize && buffer[i] != ',' && buffer[i] != '$')
-                    {
-                        token[tokenIndex++] = buffer[i++];
-                    }
-                    token[tokenIndex] = '\0'; // Null-terminate the token
+                //COMENTEI AQUI EMBAIXO PQ NAO TEM COMO DAR UPDATE NEM DELETE EM TUPLAS,SO DELETAR TABELAS
 
-                    printf("Token: %s\n", token);
 
-                    if (buffer[i] == ',')
-                    {
-                        i++; // Skip the comma
-                    }
-                }
-                if (operation == 'D')
-                {
-                    //INSERIR A PARTIR DOS TOKENS
-                    char token[256]; // Assumes tokens are smaller than 256 characters
-                    int tokenIndex = 0;
+                // if (operation == 'U')
+                // {
+                //     //FAZER OPERACOES DE REVERTER UPDATE A PARTIR DESTES TOKENS
+                //     char token[256]; // Assumes tokens are smaller than 256 characters
+                //     int tokenIndex = 0;
 
-                    while (i < fileSize && buffer[i] != ',' && buffer[i] != '$')
-                    {
-                        token[tokenIndex++] = buffer[i++];
-                    }
-                    token[tokenIndex] = '\0'; // Null-terminate the token
+                //     while (i < fileSize && buffer[i] != ',' && buffer[i] != '$')
+                //     {
+                //         token[tokenIndex++] = buffer[i++];
+                //     }
+                //     token[tokenIndex] = '\0'; // Null-terminate the token
 
-                    printf("Token: %s\n", token);
+                //     printf("Token: %s\n", token);
 
-                    if (buffer[i] == ',')
-                    {
-                        i++; // Skip the comma
-                    }
-                }
+                //     if (buffer[i] == ',')
+                //     {
+                //         i++; // Skip the comma
+                //     }
+                // }
+                // if (operation == 'D')
+                // {
+                //     //INSERIR A PARTIR DOS TOKENS
+                //     char token[256]; // Assumes tokens are smaller than 256 characters
+                //     int tokenIndex = 0;
+
+                //     while (i < fileSize && buffer[i] != ',' && buffer[i] != '$')
+                //     {
+                //         token[tokenIndex++] = buffer[i++];
+                //     }
+                //     token[tokenIndex] = '\0'; // Null-terminate the token
+
+                //     printf("Token: %s\n", token);
+
+                //     if (buffer[i] == ',')
+                //     {
+                //         i++; // Skip the comma
+                //     }
+                // }
             }
         }
         else
