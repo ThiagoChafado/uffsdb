@@ -20,6 +20,7 @@
 #include "dictionary.h"
 #endif
 
+
 int cabecalho(tp_table *s, int num_reg)
 {
     int count, aux = 0;
@@ -271,29 +272,50 @@ int logStart()
 
     fputc(start, f);
     fclose(f);
-
     return 0;
 }
 
-int logWrite(char *op, table *tab, char *nomeCampo, char *valorCampo)
+int logWrite(column *c,char type)
 {
     char init = '$';
     char mid = ',';
+   // printf("%s,%s",c->nomeCampo,c->valorCampo);
 
     FILE *f = fopen("data/logs/log", "a+");
 
     // inicio da linha de log
     fputc(init, f);
-    if (op = 'I')
-    {
-        fputc('I', f);
-        fputc(mid, f);
-        fwrite(tab->nome, 1, strlen(tab->nome), f);
-        fputc(mid, f);
-        fwrite(nomeCampo, 1, strlen(nomeCampo), f);
-        fputc(mid, f);
-        fwrite(valorCampo, 1, strlen(valorCampo), f);
+ 
+
+    while (c != NULL)
+    {   
+        if (type == 'I')
+        {
+            fputc('I', f);
+            fputc(mid, f);
+            fwrite(c->nomeCampo, 1, strlen(c->nomeCampo), f);
+            fputc(mid, f);
+            fwrite(c->valorCampo, 1, strlen(c->valorCampo), f);
+        }
+        if(type == 'D'){
+            fputc('D', f);
+            fputc(mid, f);
+            fwrite(c->nomeCampo, 1, strlen(c->nomeCampo), f);
+            fputc(mid, f);
+            fwrite(c->valorCampo, 1, strlen(c->valorCampo), f);
+        }
+        if(type == 'C'){
+            fputc('C', f);
+            fputc(mid, f);
+            fwrite(c->nomeCampo, 1, strlen(c->nomeCampo), f);
+            fputc(mid, f);
+            fwrite(c->valorCampo, 1, strlen(c->valorCampo), f);
+        }
+        c = c->next;
     }
+
+    
+    fputc('$',f);
     fclose(f);
 
     return 0;
@@ -338,6 +360,7 @@ void readLog()
         }
     }
     // printf("\n LAST INDEX:%c", buffer[lastIndex+1]);
+    
 
     // Process the buffer from last '|' to the end
     for (int i = lastIndex + 1; i < fileSize;)
@@ -352,8 +375,7 @@ void readLog()
             {
                 if (operation == 'I')
                 {
-                    //NAO TEM FUNCAO DE DELETAR NESTE BANCO,TENQ FAZER NA MAO
-                    //DELETAR A PARTIR DOS TOKENS
+                    
                     char token[256]; // Assumes tokens are smaller than 256 characters
                     int tokenIndex = 0;
                     //NESSE WHILE PROVAVELMENTE TENQ FAZER CONTADOR PARA MANTER ORDEM
@@ -371,7 +393,8 @@ void readLog()
                     }
                 }
 
-                //COMENTEI AQUI EMBAIXO PQ NAO TEM COMO DAR UPDATE NEM DELETE EM TUPLAS,SO DELETAR TABELAS
+                //COMENTEI AQUI EMBAIXO PQ NAO TEM COMO DAR UPDATE NEM DELETE EM TUPLAS,SO DELETAR TABELA
+                
 
 
                 // if (operation == 'U')

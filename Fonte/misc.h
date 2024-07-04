@@ -39,6 +39,9 @@ void logFile();
 
 int logStart();
 
-int logWrite(char *op, table *tab, char *nomeCampo, char *valorCampo);
+int logWrite(column *c,char type);
 
+
+
+//Função para rodar na inicialização do banco, caso tenha tido rollback, fazer alteracoes necessarias
 void readLog();

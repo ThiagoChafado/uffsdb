@@ -22,6 +22,10 @@
 #include "buffer.h"
 #endif
 
+#ifndef __TRANSACTION_H__
+#include "transaction.h"
+#endif
+
 /* ----------------------------------------------------------------------------------------------
     Objetivo:   Verificação de existência de um arquivo.
     Parametros: Nome do arquivo.
@@ -663,11 +667,6 @@ int finalizaTabela(table *t)
 // INSERE NA TABELA
 column *insereValor(table *tab, column *c, char *nomeCampo, char *valorCampo)
 {
-    if (1)
-    {
-        printf("\n valores = %s, %s, %s", tab->nome, nomeCampo, valorCampo);
-        logWrite("I", tab, nomeCampo, valorCampo);
-    }
     int i;
     column *aux;
     column *e = NULL;

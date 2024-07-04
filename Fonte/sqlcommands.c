@@ -30,9 +30,11 @@
   #include "Expressao.h"
 #endif
 
+#ifndef __TRANSACTION_H__
+  #include "transaction.h"
+#endif
 
-// Transação
-int transaction = 0;
+
 
 /* ----------------------------------------------------------------------------------------------
     Objetivo:   Recebe o nome de uma tabela e engloba as funções leObjeto() e leSchema().
@@ -45,6 +47,8 @@ tp_table *abreTabela(char *nomeTabela, struct fs_objects *objeto, tp_table **tab
 
     return *tabela;
 }
+
+
 // Se foram especificadas colunas no *s_insert, verifica se elas existem no esquema.
 int allColumnsExists(rc_insert *s_insert, table *tabela) {
 	int i;
@@ -307,6 +311,9 @@ int verificaChavePK(char *nomeTabela, column *c, char *nomeCampo, char *valorCam
 
 /////
 int finalizaInsert(char *nome, column *c){
+
+    // TEST AREA
+
     column *auxC, *temp;
     int i = 0, x = 0, t, erro, encontrou, j = 0, flag=0;
     FILE *dados;
@@ -462,11 +469,17 @@ int finalizaInsert(char *nome, column *c){
 			      fclose(dados);
             return ERRO_NOME_CAMPO;
           }
-
+      
           char valorCampo[auxT[t].tam];
           strncpy(valorCampo, auxC->valorCampo, auxT[t].tam);
           strcat(valorCampo, "\0");
-          fwrite(&valorCampo,sizeof(valorCampo),1,dados);
+          
+          // função p/ guardar em uma column
+
+          if(transaction == 0){
+            fwrite(&valorCampo,sizeof(valorCampo),1,dados);
+          }
+         
           //------------- inserção B+ ------------
 
         }
@@ -486,7 +499,12 @@ int finalizaInsert(char *nome, column *c){
           }
           int valorInteiro = 0;
           sscanf(auxC->valorCampo,"%d",&valorInteiro);
-          fwrite(&valorInteiro,sizeof(valorInteiro),1,dados);
+          
+          
+          if(transaction == 0){
+            fwrite(&valorInteiro,sizeof(valorInteiro),1,dados);
+          }
+         
         }
         else if (auxT[t].tipo == 'D'){ // Grava um dado do tipo double.
             x = 0;
@@ -504,7 +522,11 @@ int finalizaInsert(char *nome, column *c){
             }
 
             double valorDouble = convertD(auxC->valorCampo);
-            fwrite(&valorDouble,sizeof(valorDouble),1,dados);
+
+            // função p/ guardar em uma column
+            if(transaction == 0){
+              fwrite(&valorDouble,sizeof(valorDouble),1,dados);
+            }
         }
         else if (auxT[t].tipo == 'C'){ // Grava um dado do tipo char.
 
@@ -515,19 +537,30 @@ int finalizaInsert(char *nome, column *c){
         				free(auxT); // Libera a memoria da estrutura.
         				free(temp); // Libera a memoria da estrutura.
         				fclose(dados);
+
                 return ERRO_NO_TIPO_CHAR;
             }
             char valorChar = auxC->valorCampo[0];
-            fwrite(&valorChar,sizeof(valorChar),1,dados);
-
+            
+            if(transaction == 0){
+              fwrite(&valorChar,sizeof(valorChar),1,dados);
+            }
         }
 
     }
+
+  if(transaction == 1){
+    //printf("\nTIPO DO CAMPO: %c NOME DO CAMPO: %s VALOR DO CAMPO: %s", auxT->tipo, c->nomeCampo, c->valorCampo);
+    logWrite(c,auxT->tipo);
+  }
   fclose(dados);
 	free(tab); // Libera a memoria da estrutura.
 	free(tab2); // Libera a memoria da estrutura.
 	free(auxT); // Libera a memoria da estrutura.
 	free(temp); // Libera a memoria da estrutura.
+  
+  //LOGWRITE()
+  
   return SUCCESS;
 }
 
@@ -1220,23 +1253,29 @@ void createIndex(rc_insert *t) {
 
 void beginTransaction() { 
     printf("Transaction started.\n");
-    //logStart();
-    readLog();
+    transaction = 1;
+    logStart();
+    printf("Transaction = %d\n",transaction);
     
     
 }
 
 void endTransaction() {
     printf("Transaction ended.\n");
-    
+    commitTransaction()
 }
 
 void commitTransaction() {
     printf("Transaction committed.\n");
+    transaction = 0;
+    readLog();
+    
 }
 
 void rollbackTransaction() {
     printf("Transaction rolled back.\n");
+    transaction = 0;
+    //Nao faz nada?
 }
 
 ///////
