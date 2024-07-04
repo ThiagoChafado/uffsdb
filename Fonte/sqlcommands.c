@@ -1262,7 +1262,7 @@ void beginTransaction() {
 
 void endTransaction() {
     printf("Transaction ended.\n");
-    commitTransaction()
+    commitTransaction();
 }
 
 void commitTransaction() {
