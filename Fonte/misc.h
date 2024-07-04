@@ -47,3 +47,15 @@ int logEnd();
 
 //Função para rodar na inicialização do banco, caso tenha tido rollback, fazer alteracoes necessarias
 void readLog();
+
+//Free columns memory
+void freeColumns(column *head);
+
+//print columns
+void printColumns(column *head);
+
+//Add column
+void addColumn(column **head, column *newCol);
+
+//Create column struct
+column *createColumn(char type, const char *nomeCampo, const char *valorCampo);

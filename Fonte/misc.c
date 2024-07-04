@@ -264,40 +264,46 @@ void clear()
 }
 
 
-// Função para criar um novo nó na lista encadeada
-column* createColumn(char type, const char *nomeCampo, const char *valorCampo) {
-    column *newCol = (column*) malloc(sizeof(column));
-    if (newCol == NULL) {
+column *createColumn(char type, const char *nomeCampo, const char *valorCampo)
+{
+    column *newCol = (column *)malloc(sizeof(column));
+    if (newCol == NULL)
+    {
         printf("ERROR MALLOC");
         return NULL;
     }
     newCol->tipoCampo = type;
     strncpy(newCol->nomeCampo, nomeCampo, 39);
-    newCol->nomeCampo[39] = '\0'; // Assegura a terminação da string
+    newCol->nomeCampo[39] = '\0'; 
     newCol->valorCampo = strdup(valorCampo);
     newCol->next = NULL;
     return newCol;
 }
 
-// Função para adicionar um nó à lista encadeada
-void addColumn(column **head, column *newCol) {
+
+void addColumn(column **head, column *newCol)
+{
     newCol->next = *head;
     *head = newCol;
 }
 
-// Função para imprimir a lista encadeada
-void printColumns(column *head) {
+
+void printColumns(column *head)
+{
     column *current = head;
-    while (current != NULL) {
-        printf("Type: %c, Nome: %s, Valor: %s\n", current->tipoCampo, current->nomeCampo, current->valorCampo);
+    while (current != NULL)
+    {
+        printf("Column == Type: %c, Nome: %s, Valor: %s\n", current->tipoCampo, current->nomeCampo, current->valorCampo);
         current = current->next;
     }
 }
 
-// Função para liberar a memória da lista encadeada
-void freeColumns(column *head) {
+
+void freeColumns(column *head)
+{
     column *current = head;
-    while (current != NULL) {
+    while (current != NULL)
+    {
         column *next = current->next;
         free(current->valorCampo);
         free(current);
@@ -305,10 +311,11 @@ void freeColumns(column *head) {
     }
 }
 
-int logEnd(){
+int logEnd()
+{
     char end = '|';
-    FILE *f = fopen("data/logs/log","a+");
-    fputc(end,f);
+    FILE *f = fopen("data/logs/log", "a+");
+    fputc(end, f);
     fclose(f);
     return 0;
 }
@@ -344,7 +351,7 @@ int logWrite(column *c, char type)
             fwrite(c->nomeCampo, 1, strlen(c->nomeCampo), f);
             fputc(mid, f);
             fwrite(c->valorCampo, 1, strlen(c->valorCampo), f);
-            fputc(mid,f);
+            fputc(mid, f);
         }
         if (type == 'D')
         {
@@ -353,7 +360,7 @@ int logWrite(column *c, char type)
             fwrite(c->nomeCampo, 1, strlen(c->nomeCampo), f);
             fputc(mid, f);
             fwrite(c->valorCampo, 1, strlen(c->valorCampo), f);
-            fputc(mid,f);
+            fputc(mid, f);
         }
         if (type == 'C')
         {
@@ -362,7 +369,7 @@ int logWrite(column *c, char type)
             fwrite(c->nomeCampo, 1, strlen(c->nomeCampo), f);
             fputc(mid, f);
             fwrite(c->valorCampo, 1, strlen(c->valorCampo), f);
-            fputc(mid,f);
+            fputc(mid, f);
         }
         c = c->next;
     }
@@ -373,81 +380,99 @@ int logWrite(column *c, char type)
     return 0;
 }
 
-void readLog()
-{
-    int c;
-    int lastIndex = 0;
-
+void readLog() {
     FILE *f = fopen("data/logs/log", "r");
-    if (f == NULL)
+    if (f == NULL) {
         printf("error read");
-    fseek(f, 0, SEEK_SET);
-    // size_t i = 0;
+        return;
+    }
 
     fseek(f, 0, SEEK_END);
     long fileSize = ftell(f);
+    fseek(f, 0, SEEK_SET);
+
     char *buffer = (char *)malloc(fileSize + 1);
-    char *temp = (char *)malloc(fileSize + 1);
-    column *auxC;
-    if (buffer == NULL)
-    {
+    if (buffer == NULL) {
         printf("ERROR MALLOC");
         fclose(f);
         return;
     }
-    fseek(f, 0, SEEK_SET);
-    int z;
-    for (int i = 0; i <= fileSize - 1; i++)
-    {
-        int c = fgetc(f);
-        //printf("%c", c);
-        buffer[i] = c;
-    }
 
-    for (z = 0; z <= fileSize; z++)
-    {
-        //printf("%c", buffer[z]);
-        if (buffer[z] == '|')
-        {
-            lastIndex = z;
+    fread(buffer, 1, fileSize, f);
+    buffer[fileSize] = '\0';
+    fclose(f);
+
+    int lastIndex = -1;
+    for (int i = 0; i < fileSize; i++) {
+        if (buffer[i] == '|') {
+            lastIndex = i;
         }
     }
-    // printf("\n LAST INDEX:%c", buffer[lastIndex+1]);
 
-    printf("TOKENS FOUND \n");
+    if (lastIndex == -1) {
+        printf("No '|' character found in the log file.\n");
+        free(buffer);
+        return;
+    }
+
+    column *head = NULL;
+
+    //printf("TOKENS FOUND \n");
+
+    char auxType;
+    char auxName[40];
+    char auxValue[256];
+    int counter = 0;
+
     // Process the buffer from last '|' to the end
-    for (int i = lastIndex + 1; i < fileSize;)
-    {
-        if (buffer[i] == '$')
-        {
+    for (int i = lastIndex + 1; i < fileSize;) {
+        if (buffer[i] == '$') {
             i++; // Skip the '$' character
-            
-            // Process the tokens separated by commas
-            while (i < fileSize && buffer[i] != '$')
-            {
 
+            // Process the tokens separated by commas
+            while (i < fileSize && buffer[i] != '$') {
                 char token[256]; // Assumes tokens are smaller than 256 characters
                 int tokenIndex = 0;
-                // NESSE WHILE PROVAVELMENTE TENQ FAZER CONTADOR PARA MANTER ORDEM
-                while (i < fileSize && buffer[i] != ',' && buffer[i] != '$')
-                {
+
+                while (i < fileSize && buffer[i] != ',' && buffer[i] != '$') {
                     token[tokenIndex++] = buffer[i++];
                 }
                 token[tokenIndex] = '\0'; // Null-terminate the token
 
-                printf("Token: %s\n", token);
+                if (counter == 0) {
+                    auxType = token[0];
+                    //printf("On type: %c\n", auxType);
+                } else if (counter == 1) {
+                    strncpy(auxName, token, 39);
+                    auxName[39] = '\0';
+                    //printf("On Name: %s\n", auxName);
+                } else if (counter == 2) {
+                    strncpy(auxValue, token, 255);
+                    auxValue[255] = '\0';
+                    //printf("On value: %s\n", auxValue);
 
-                if (buffer[i] == ',')
-                {
-                    i++; // Skip the comma
+                    // Create and add the new column to the linked list
+                    column *newCol = createColumn(auxType, auxName, auxValue);
+                    if (newCol != NULL) {
+                        addColumn(&head, newCol);
+                    }
                 }
 
+                counter++;
+                if (counter >= 3) {
+                    counter = 0;
+                }
+
+                if (buffer[i] == ',') {
+                    i++; // Skip the comma
+                }
             }
-        }
-        else
-        {
+        } else {
             i++; // Move to the next character
         }
     }
-    fclose(f);
+
+    printColumns(head);
+    freeColumns(head);
+    free(buffer);
 }
