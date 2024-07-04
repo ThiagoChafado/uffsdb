@@ -1269,6 +1269,8 @@ void commitTransaction() {
     printf("Transaction committed.\n");
     transaction = 0;
     readLog();
+    logEnd();
+
     
 }
 

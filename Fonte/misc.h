@@ -42,6 +42,8 @@ int logStart();
 int logWrite(column *c,char type);
 
 
+//Aux function to put | at the end of log
+int logEnd();
 
 //Função para rodar na inicialização do banco, caso tenha tido rollback, fazer alteracoes necessarias
 void readLog();

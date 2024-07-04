@@ -20,7 +20,6 @@
 #include "dictionary.h"
 #endif
 
-
 int cabecalho(tp_table *s, int num_reg)
 {
     int count, aux = 0;
@@ -264,6 +263,56 @@ void clear()
     system("clear");
 }
 
+
+// Função para criar um novo nó na lista encadeada
+column* createColumn(char type, const char *nomeCampo, const char *valorCampo) {
+    column *newCol = (column*) malloc(sizeof(column));
+    if (newCol == NULL) {
+        printf("ERROR MALLOC");
+        return NULL;
+    }
+    newCol->tipoCampo = type;
+    strncpy(newCol->nomeCampo, nomeCampo, 39);
+    newCol->nomeCampo[39] = '\0'; // Assegura a terminação da string
+    newCol->valorCampo = strdup(valorCampo);
+    newCol->next = NULL;
+    return newCol;
+}
+
+// Função para adicionar um nó à lista encadeada
+void addColumn(column **head, column *newCol) {
+    newCol->next = *head;
+    *head = newCol;
+}
+
+// Função para imprimir a lista encadeada
+void printColumns(column *head) {
+    column *current = head;
+    while (current != NULL) {
+        printf("Type: %c, Nome: %s, Valor: %s\n", current->tipoCampo, current->nomeCampo, current->valorCampo);
+        current = current->next;
+    }
+}
+
+// Função para liberar a memória da lista encadeada
+void freeColumns(column *head) {
+    column *current = head;
+    while (current != NULL) {
+        column *next = current->next;
+        free(current->valorCampo);
+        free(current);
+        current = next;
+    }
+}
+
+int logEnd(){
+    char end = '|';
+    FILE *f = fopen("data/logs/log","a+");
+    fputc(end,f);
+    fclose(f);
+    return 0;
+}
+
 int logStart()
 {
     char start = '|';
@@ -275,20 +324,19 @@ int logStart()
     return 0;
 }
 
-int logWrite(column *c,char type)
+int logWrite(column *c, char type)
 {
     char init = '$';
     char mid = ',';
-   // printf("%s,%s",c->nomeCampo,c->valorCampo);
+    // printf("%s,%s",c->nomeCampo,c->valorCampo);
 
     FILE *f = fopen("data/logs/log", "a+");
 
     // inicio da linha de log
     fputc(init, f);
- 
 
     while (c != NULL)
-    {   
+    {
         if (type == 'I')
         {
             fputc('I', f);
@@ -296,26 +344,30 @@ int logWrite(column *c,char type)
             fwrite(c->nomeCampo, 1, strlen(c->nomeCampo), f);
             fputc(mid, f);
             fwrite(c->valorCampo, 1, strlen(c->valorCampo), f);
+            fputc(mid,f);
         }
-        if(type == 'D'){
+        if (type == 'D')
+        {
             fputc('D', f);
             fputc(mid, f);
             fwrite(c->nomeCampo, 1, strlen(c->nomeCampo), f);
             fputc(mid, f);
             fwrite(c->valorCampo, 1, strlen(c->valorCampo), f);
+            fputc(mid,f);
         }
-        if(type == 'C'){
+        if (type == 'C')
+        {
             fputc('C', f);
             fputc(mid, f);
             fwrite(c->nomeCampo, 1, strlen(c->nomeCampo), f);
             fputc(mid, f);
             fwrite(c->valorCampo, 1, strlen(c->valorCampo), f);
+            fputc(mid,f);
         }
         c = c->next;
     }
 
-    
-    fputc('$',f);
+    fputc('$', f);
     fclose(f);
 
     return 0;
@@ -336,6 +388,7 @@ void readLog()
     long fileSize = ftell(f);
     char *buffer = (char *)malloc(fileSize + 1);
     char *temp = (char *)malloc(fileSize + 1);
+    column *auxC;
     if (buffer == NULL)
     {
         printf("ERROR MALLOC");
@@ -347,94 +400,48 @@ void readLog()
     for (int i = 0; i <= fileSize - 1; i++)
     {
         int c = fgetc(f);
-        printf("%c", c);
+        //printf("%c", c);
         buffer[i] = c;
     }
 
     for (z = 0; z <= fileSize; z++)
     {
-        printf("%c", buffer[z]);
+        //printf("%c", buffer[z]);
         if (buffer[z] == '|')
         {
             lastIndex = z;
         }
     }
     // printf("\n LAST INDEX:%c", buffer[lastIndex+1]);
-    
 
+    printf("TOKENS FOUND \n");
     // Process the buffer from last '|' to the end
     for (int i = lastIndex + 1; i < fileSize;)
     {
         if (buffer[i] == '$')
         {
             i++; // Skip the '$' character
-            char operation = buffer[i++];
-
+            
             // Process the tokens separated by commas
             while (i < fileSize && buffer[i] != '$')
             {
-                if (operation == 'I')
+
+                char token[256]; // Assumes tokens are smaller than 256 characters
+                int tokenIndex = 0;
+                // NESSE WHILE PROVAVELMENTE TENQ FAZER CONTADOR PARA MANTER ORDEM
+                while (i < fileSize && buffer[i] != ',' && buffer[i] != '$')
                 {
-                    
-                    char token[256]; // Assumes tokens are smaller than 256 characters
-                    int tokenIndex = 0;
-                    //NESSE WHILE PROVAVELMENTE TENQ FAZER CONTADOR PARA MANTER ORDEM
-                    while (i < fileSize && buffer[i] != ',' && buffer[i] != '$')
-                    {
-                        token[tokenIndex++] = buffer[i++];
-                    }
-                    token[tokenIndex] = '\0'; // Null-terminate the token
+                    token[tokenIndex++] = buffer[i++];
+                }
+                token[tokenIndex] = '\0'; // Null-terminate the token
 
-                    printf("Token: %s\n", token);
+                printf("Token: %s\n", token);
 
-                    if (buffer[i] == ',')
-                    {
-                        i++; // Skip the comma
-                    }
+                if (buffer[i] == ',')
+                {
+                    i++; // Skip the comma
                 }
 
-                //COMENTEI AQUI EMBAIXO PQ NAO TEM COMO DAR UPDATE NEM DELETE EM TUPLAS,SO DELETAR TABELA
-                
-
-
-                // if (operation == 'U')
-                // {
-                //     //FAZER OPERACOES DE REVERTER UPDATE A PARTIR DESTES TOKENS
-                //     char token[256]; // Assumes tokens are smaller than 256 characters
-                //     int tokenIndex = 0;
-
-                //     while (i < fileSize && buffer[i] != ',' && buffer[i] != '$')
-                //     {
-                //         token[tokenIndex++] = buffer[i++];
-                //     }
-                //     token[tokenIndex] = '\0'; // Null-terminate the token
-
-                //     printf("Token: %s\n", token);
-
-                //     if (buffer[i] == ',')
-                //     {
-                //         i++; // Skip the comma
-                //     }
-                // }
-                // if (operation == 'D')
-                // {
-                //     //INSERIR A PARTIR DOS TOKENS
-                //     char token[256]; // Assumes tokens are smaller than 256 characters
-                //     int tokenIndex = 0;
-
-                //     while (i < fileSize && buffer[i] != ',' && buffer[i] != '$')
-                //     {
-                //         token[tokenIndex++] = buffer[i++];
-                //     }
-                //     token[tokenIndex] = '\0'; // Null-terminate the token
-
-                //     printf("Token: %s\n", token);
-
-                //     if (buffer[i] == ',')
-                //     {
-                //         i++; // Skip the comma
-                //     }
-                // }
             }
         }
         else
