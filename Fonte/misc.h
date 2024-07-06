@@ -39,14 +39,14 @@ void logFile();
 
 int logStart();
 
-int logWrite(column *c,char type);
+int logWrite(column *c,char *nome);
 
 
 //Aux function to put | at the end of log
-int logEnd();
+void logCommit(int commited);
 
 //Função para rodar na inicialização do banco, caso tenha tido rollback, fazer alteracoes necessarias
-void readLog();
+int commit();
 
 //Free columns memory
 void freeColumns(column *head);

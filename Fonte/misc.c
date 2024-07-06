@@ -20,6 +20,10 @@
 #include "dictionary.h"
 #endif
 
+#ifndef FSQLCOMMANDS
+#include "sqlcommands.h"
+#endif
+
 int cabecalho(tp_table *s, int num_reg)
 {
     int count, aux = 0;
@@ -283,8 +287,20 @@ column *createColumn(char type, const char *nomeCampo, const char *valorCampo)
 
 void addColumn(column **head, column *newCol)
 {
-    newCol->next = *head;
-    *head = newCol;
+    column *temp = *head;
+
+    newCol->next = NULL;
+
+    if (*head == NULL) {
+        *head = newCol;
+        return;
+    }
+    
+    while (temp->next != NULL) {
+        temp = temp->next;
+    }
+ 
+    temp->next = newCol;
 }
 
 
@@ -311,13 +327,14 @@ void freeColumns(column *head)
     }
 }
 
-int logEnd()
+void logCommit(int commited)
 {
-    char end = '|';
+    char commit = '&';
     FILE *f = fopen("data/logs/log", "a+");
-    fputc(end, f);
+    if (commited == 0){
+        fputc(commit, f);
+    }
     fclose(f);
-    return 0;
 }
 
 int logStart()
@@ -331,60 +348,39 @@ int logStart()
     return 0;
 }
 
-int logWrite(column *c, char type)
+int logWrite(column *c, char *nome)
 {
     char init = '$';
     char mid = ',';
-    // printf("%s,%s",c->nomeCampo,c->valorCampo);
 
     FILE *f = fopen("data/logs/log", "a+");
 
     // inicio da linha de log
     fputc(init, f);
+    fputc('I', f);
+    fputc(mid, f);
+    fwrite(nome, 1, strlen(nome), f);
 
     while (c != NULL)
     {
-        if (type == 'I')
-        {
-            fputc('I', f);
-            fputc(mid, f);
-            fwrite(c->nomeCampo, 1, strlen(c->nomeCampo), f);
-            fputc(mid, f);
-            fwrite(c->valorCampo, 1, strlen(c->valorCampo), f);
-            fputc(mid, f);
-        }
-        if (type == 'D')
-        {
-            fputc('D', f);
-            fputc(mid, f);
-            fwrite(c->nomeCampo, 1, strlen(c->nomeCampo), f);
-            fputc(mid, f);
-            fwrite(c->valorCampo, 1, strlen(c->valorCampo), f);
-            fputc(mid, f);
-        }
-        if (type == 'C')
-        {
-            fputc('C', f);
-            fputc(mid, f);
-            fwrite(c->nomeCampo, 1, strlen(c->nomeCampo), f);
-            fputc(mid, f);
-            fwrite(c->valorCampo, 1, strlen(c->valorCampo), f);
-            fputc(mid, f);
-        }
+        fputc(mid, f);
+        fwrite(c->nomeCampo, 1, strlen(c->nomeCampo), f);
+        fputc(mid, f);
+        fwrite(c->valorCampo, 1, strlen(c->valorCampo), f);
         c = c->next;
     }
 
-    fputc('$', f);
     fclose(f);
 
     return 0;
 }
 
-void readLog() {
+int commit() {
+    // Abre o LOG
     FILE *f = fopen("data/logs/log", "r");
     if (f == NULL) {
         printf("error read");
-        return;
+        return 1;
     }
 
     fseek(f, 0, SEEK_END);
@@ -395,61 +391,77 @@ void readLog() {
     if (buffer == NULL) {
         printf("ERROR MALLOC");
         fclose(f);
-        return;
+        return 1;
     }
 
     fread(buffer, 1, fileSize, f);
     buffer[fileSize] = '\0';
     fclose(f);
 
+    // Acha a posição de início da última transação escrita no LOG
     int lastIndex = -1;
     for (int i = 0; i < fileSize; i++) {
         if (buffer[i] == '|') {
             lastIndex = i;
+        } else if (buffer[i] == '&')
+        {
+            lastIndex = -1;
         }
+        
     }
 
+    // Caso não hajam transações no LOG 
     if (lastIndex == -1) {
-        printf("No '|' character found in the log file.\n");
+        printf("No uncommited transaction found.\n");
         free(buffer);
-        return;
+        return 1;
     }
 
+    // INSERT -------------------------------------------------------------------------
     column *head = NULL;
 
     //printf("TOKENS FOUND \n");
 
+    char transactionType;
+    char tableName[TAMANHO_NOME_TABELA];
     char auxType;
-    char auxName[40];
+    char auxName[TAMANHO_NOME_CAMPO];
     char auxValue[256];
-    int counter = 0;
 
     // Process the buffer from last '|' to the end
     for (int i = lastIndex + 1; i < fileSize;) {
         if (buffer[i] == '$') {
             i++; // Skip the '$' character
 
+            int counter = -1;
+
+            // Get transaction type
+            transactionType = buffer[i];
+            i++;
+
             // Process the tokens separated by commas
             while (i < fileSize && buffer[i] != '$') {
                 char token[256]; // Assumes tokens are smaller than 256 characters
                 int tokenIndex = 0;
+                
+                if (buffer[i] == ',') {
+                    i++; // Skip the comma
+                }
 
                 while (i < fileSize && buffer[i] != ',' && buffer[i] != '$') {
                     token[tokenIndex++] = buffer[i++];
                 }
                 token[tokenIndex] = '\0'; // Null-terminate the token
 
-                if (counter == 0) {
-                    auxType = token[0];
-                    //printf("On type: %c\n", auxType);
+                if (counter == -1) {
+                    strncpy(tableName, token, TAMANHO_NOME_TABELA - 1);
+                    tableName[TAMANHO_NOME_TABELA - 1] = '\0';
+                } else if (counter == 0) {
+                    strncpy(auxName, token, TAMANHO_NOME_CAMPO - 1);
+                    auxName[TAMANHO_NOME_CAMPO - 1] = '\0';
                 } else if (counter == 1) {
-                    strncpy(auxName, token, 39);
-                    auxName[39] = '\0';
-                    //printf("On Name: %s\n", auxName);
-                } else if (counter == 2) {
                     strncpy(auxValue, token, 255);
                     auxValue[255] = '\0';
-                    //printf("On value: %s\n", auxValue);
 
                     // Create and add the new column to the linked list
                     column *newCol = createColumn(auxType, auxName, auxValue);
@@ -458,21 +470,30 @@ void readLog() {
                     }
                 }
 
+                // Avança o contador
                 counter++;
-                if (counter >= 3) {
+                if (counter >= 2) {
                     counter = 0;
                 }
 
-                if (buffer[i] == ',') {
-                    i++; // Skip the comma
-                }
             }
+            // Insere na tabela de fato
+            finalizaInsert(tableName, head);
+
+            // Reseta os auxiliares
+            head = NULL;
+            memset(tableName, 0, sizeof(tableName));
+            memset(auxName, 0, sizeof(auxName));
+            memset(auxValue, 0, sizeof(auxValue));
         } else {
             i++; // Move to the next character
         }
     }
 
-    printColumns(head);
+    // Limpa as estruturas
     freeColumns(head);
     free(buffer);
+
+    printf("Transaction commited.\n");
+    return 0;
 }

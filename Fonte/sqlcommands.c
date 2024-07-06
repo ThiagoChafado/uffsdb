@@ -312,6 +312,7 @@ int verificaChavePK(char *nomeTabela, column *c, char *nomeCampo, char *valorCam
 /////
 int finalizaInsert(char *nome, column *c){
 
+
     // TEST AREA
 
     column *auxC, *temp;
@@ -461,6 +462,7 @@ int finalizaInsert(char *nome, column *c){
           }
 
           if(objcmp(auxC->nomeCampo, auxT[t].nome) != 0){
+            printf("Nome 1 = [%s] Nome 2 = [%s] \n", auxC->nomeCampo, auxT[t].nome);
             printf("ERROR: column name \"%s\" is not valid.\n", auxC->nomeCampo);
 			      free(tab); // Libera a memoria da estrutura.
 			      free(tab2); // Libera a memoria da estrutura.
@@ -551,7 +553,7 @@ int finalizaInsert(char *nome, column *c){
 
   if(transaction == 1){
     //printf("\nTIPO DO CAMPO: %c NOME DO CAMPO: %s VALOR DO CAMPO: %s", auxT->tipo, c->nomeCampo, c->valorCampo);
-    logWrite(c,auxT->tipo);
+    logWrite(c, nome);
   }
   fclose(dados);
 	free(tab); // Libera a memoria da estrutura.
@@ -1252,32 +1254,28 @@ void createIndex(rc_insert *t) {
 
 
 void beginTransaction() { 
-    printf("Transaction started.\n");
     transaction = 1;
-    logStart();
-    printf("Transaction = %d\n",transaction);
-    
-    
+    logStart(); // Cria/abre o log e insere '|'
+    printf("Transaction started.\n");
 }
 
 void endTransaction() {
-    printf("Transaction ended.\n");
     commitTransaction();
+    transaction = 0;
+    printf("Transaction ended.\n");
 }
 
 void commitTransaction() {
-    printf("Transaction committed.\n");
     transaction = 0;
-    readLog();
-    logEnd();
-
-    
+    int commited = commit(); // Lê o log e manda para o banco
+    transaction = 1;
+    logCommit(commited); // Abre o log e insere '&' no log para indicar o commit
 }
 
 void rollbackTransaction() {
     printf("Transaction rolled back.\n");
     transaction = 0;
-    //Nao faz nada?
+    logCommit(0); // Abre o log e insere '&' no log para indicar o rollback
 }
 
 ///////
