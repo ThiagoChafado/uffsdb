@@ -362,6 +362,7 @@ int finalizaInsert(char *nome, column *c){
         				//free(temp); // Libera a memoria da estrutura.
         				free(tab); // Libera a memoria da estrutura.
         				free(tab2); // Libera a memoria da estrutura.
+                if(transaction == 1) rollbackTransaction();
         				return ERRO_CHAVE_PRIMARIA;
         			}
         		}
@@ -389,6 +390,7 @@ int finalizaInsert(char *nome, column *c){
             						free(temp); // Libera a memoria da estrutura.
                         free(tab); // Libera a memoria da estrutura.
   					            free(tab2); // Libera a memoria da estrutura.
+                        if(transaction == 1) rollbackTransaction();
                         return ERRO_CHAVE_ESTRANGEIRA;
                     }
                 }
@@ -401,6 +403,7 @@ int finalizaInsert(char *nome, column *c){
                     free(temp); // Libera a memoria da estrutura.
                     free(tab); // Libera a memoria da estrutura.
                     free(tab2); // Libera a memoria da estrutura.
+                    if(transaction == 1) rollbackTransaction();
                     return ERRO_CHAVE_ESTRANGEIRA;
                   }
                   erro = SUCCESS;
@@ -458,6 +461,7 @@ int finalizaInsert(char *nome, column *c){
 			      free(auxT); // Libera a memoria da estrutura.
 			      free(temp); // Libera a memoria da estrutura.
 			      fclose(dados);
+            if(transaction == 1) rollbackTransaction();
             return ERRO_NO_TAMANHO_STRING;
           }
 
@@ -469,6 +473,7 @@ int finalizaInsert(char *nome, column *c){
 			      free(auxT); // Libera a memoria da estrutura.
 			      free(temp); // Libera a memoria da estrutura.
 			      fclose(dados);
+            if(transaction == 1) rollbackTransaction();
             return ERRO_NOME_CAMPO;
           }
       
@@ -495,6 +500,7 @@ int finalizaInsert(char *nome, column *c){
   				    free(auxT); // Libera a memoria da estrutura.
   				    //free(temp); // Libera a memoria da estrutura.
   				    fclose(dados);
+              if(transaction == 1) rollbackTransaction();
               return ERRO_NO_TIPO_INTEIRO;
             }
             i++;
@@ -518,6 +524,7 @@ int finalizaInsert(char *nome, column *c){
           					free(auxT); // Libera a memoria da estrutura.
           					free(temp); // Libera a memoria da estrutura.
           					fclose(dados);
+                    if(transaction == 1) rollbackTransaction();
                     return ERRO_NO_TIPO_DOUBLE;
                 }
                 x++;
@@ -539,6 +546,7 @@ int finalizaInsert(char *nome, column *c){
         				free(auxT); // Libera a memoria da estrutura.
         				free(temp); // Libera a memoria da estrutura.
         				fclose(dados);
+                if(transaction == 1) rollbackTransaction();
 
                 return ERRO_NO_TIPO_CHAR;
             }
@@ -561,7 +569,6 @@ int finalizaInsert(char *nome, column *c){
 	free(auxT); // Libera a memoria da estrutura.
 	free(temp); // Libera a memoria da estrutura.
   
-  //LOGWRITE()
   
   return SUCCESS;
 }
@@ -633,6 +640,7 @@ void insert(rc_insert *s_insert) {
 	free(esquema);
 	freeColumn(colunas);
 	freeTable(tabela);
+  if(flag == 1 && transaction == 1) rollbackTransaction(); 
 }
 
 //select * from t4;
